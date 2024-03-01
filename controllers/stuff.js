@@ -2,18 +2,19 @@ const Thing = require('../models/thing');
 const fs = require('fs');
 
 exports.createThing = (req, res, next) => {
-  const thingObject = JSON.parse(req.body.thing);
-  delete thingObject._id;
-  delete thingObject._userId;
-  const thing = new Thing({
+  console.log(req.body);
+  const thingObject = JSON.parse(req.body.book);
+  delete thingObject.userId;
+  if (parseInt(thingObject.year)) {
+    const thing = new Thing({
       ...thingObject,
       userId: req.auth.userId,
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   });
-
   thing.save()
   .then(() => { res.status(201).json({message: 'Objet enregistré !'})})
-  .catch(error => { res.status(400).json( { error })})
+  .catch(error => { console.log(error)})
+  };
 };
 
 exports.getOneThing = (req, res, next) => {
@@ -33,11 +34,11 @@ exports.getOneThing = (req, res, next) => {
 };
 
 exports.modifyThing = (req, res, next) => {
+
   const thingObject = req.file ? {
-      ...JSON.parse(req.body.thing),
+      ...JSON.parse(req.body.book),
       imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
   } : { ...req.body };
-
   delete thingObject._userId;
   Thing.findOne({_id: req.params.id})
       .then((thing) => {
@@ -73,7 +74,7 @@ exports.deleteThing = (req, res, next) => {
       });
 };
 
-exports.getAllStuff = (req, res, next) => {
+exports.getAllThings = (req, res, next) => {
   Thing.find().then(
     (things) => {
       res.status(200).json(things);
