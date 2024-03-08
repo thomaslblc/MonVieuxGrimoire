@@ -15,6 +15,20 @@ exports.getAllThings = (req, res, next) => {
   );
 };
 
+exports.bestRatings = (req, res, next) => {
+  Thing.find().sort({'averageRating' : 'desc'}).limit(3).then(
+    (things) => {
+      res.status(200).json(things);
+    }
+  ).catch(
+    (error) => {
+      res.status(400).json({
+        error: error
+      });
+    }
+  );
+}
+
 exports.getOneThing = (req, res, next) => {
   Thing.findOne({
     _id: req.params.id
@@ -94,18 +108,3 @@ exports.deleteThing = (req, res, next) => {
       res.status(500).json({ error });
     });
 };
-
-exports.bestRatings = (req, res, next) => {
-  Thing.find().sort({'averageRating' : 'desc'}).then(
-    (things) => {
-      console.log(things);
-      res.status(200).json(things);
-    }
-  ).catch(
-    (error) => {
-      res.status(400).json({
-        error: error
-      });
-    }
-  );
-}
