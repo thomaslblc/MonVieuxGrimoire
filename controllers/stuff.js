@@ -16,7 +16,7 @@ exports.getAllThings = (req, res, next) => {
 };
 
 exports.bestRatings = (req, res, next) => {
-  Thing.find().sort({'averageRating' : 'desc'}).limit(3).then(
+  Thing.find().sort({ 'averageRating': 'desc' }).limit(3).then(
     (things) => {
       res.status(200).json(things);
     }
@@ -88,6 +88,42 @@ exports.modifyThing = (req, res, next) => {
     .catch((error) => {
       res.status(400).json({ error });
     });
+};
+
+exports.rateThing = (req, res, next) => {
+  if (req.body.rating < 0 || req.body.rating > 5) {
+    return res.status(400).json({ message: 'La note doit être comprise entre 0 et 5.'})
+  }
+  Thing.findOne({
+    _id: req.params.id
+  }).then(
+    (thing) => {
+      console.log(thing);
+      let alreadyRated = false;
+      let total = 0;
+      thing.ratings.forEach (rating => {
+        total += rating.grade;
+        if (thing.userId == req.auth.userId) {
+          alreadyRated = true;
+        }
+      })
+      if (alreadyRated) {
+        return res.status(401).json({ message: 'Vous avez déjà noté ce livre.' });
+      }
+      total += req.body.rating;
+      let averageRating = total / (thing.ratings.length + 1);
+      console.log(averageRating);
+      const newRating = {userId: req.auth.userId, grade: req.body.rating};
+      Thing.updateOne({ _id: thing._id }, {averageRating: averageRating, _id: req.params.id, $push: {ratings: newRating}})
+          .then((thingUpdated) => {
+            console.log(thingUpdated);
+            res.status(200).json(thingUpdated);
+          })
+          .catch((error) => {
+            res.status(401).json({ error });
+          });
+    })
+  
 };
 
 exports.deleteThing = (req, res, next) => {
