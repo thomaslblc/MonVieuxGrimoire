@@ -98,7 +98,6 @@ exports.rateThing = (req, res, next) => {
     _id: req.params.id
   }).then(
     (thing) => {
-      console.log(thing);
       let alreadyRated = false;
       let total = 0;
       thing.ratings.forEach (rating => {
@@ -112,11 +111,9 @@ exports.rateThing = (req, res, next) => {
       }
       total += req.body.rating;
       let averageRating = total / (thing.ratings.length + 1);
-      console.log(averageRating);
       const newRating = {userId: req.auth.userId, grade: req.body.rating};
-      Thing.updateOne({ _id: thing._id }, {averageRating: averageRating, _id: req.params.id, $push: {ratings: newRating}})
+      Thing.findByIdAndUpdate({ _id: thing._id }, {averageRating: averageRating, _id: req.params.id, $push: {ratings: newRating}}, { new: true})
           .then((thingUpdated) => {
-            console.log(thingUpdated);
             res.status(200).json(thingUpdated);
           })
           .catch((error) => {
