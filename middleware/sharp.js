@@ -10,7 +10,7 @@ const optimize = (req, res, next) => {
     const lastDot = imagePath.lastIndexOf(".");
     const imageName = imagePath.substring(0, lastDot);
     const newExtension = ".webp";
-    const newFilePath = imageName + 'resized_' + newExtension;
+    const newFilePath =  imageName + newExtension;
     req.file.path = newFilePath;
     req.file.filename = newFilePath;
     console.log(newFilePath);
@@ -19,12 +19,10 @@ const optimize = (req, res, next) => {
       .resize(500, 500, { fit: 'inside' })
       .toFormat('webp')
       .toFile(newFilePath, (err, info) => {
-        const filename = filePath.split('images\\')[1];
+        const filename = newFilePath.split(path.sep).pop();
         //fs.unlinkSync(`images/${filename}`)
         console.log(err)
-
       });
-
   }
   next();
 }
