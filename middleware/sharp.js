@@ -5,23 +5,26 @@ const fs = require('fs');
 const optimize = (req, res, next) => {
   if (req.file) {
     const filePath = req.file.path;
-    console.log(filePath);
-    const imagePath = req.file.path;
-    const lastDot = imagePath.lastIndexOf(".");
-    const imageName = imagePath.substring(0, lastDot);
-    const newExtension = ".webp";
-    const newFilePath =  imageName + newExtension;
-    req.file.path = newFilePath;
-    req.file.filename = newFilePath;
-    console.log(newFilePath);
 
-    sharp(filePath)
+    const cleanImagePath = path.normalize(filePath);
+
+    const lastDot = cleanImagePath.lastIndexOf(".");
+    const imageName = cleanImagePath.substring(0, lastDot);
+    const newExtension = ".webp";
+
+    const newFilePath = path.join(path.dirname(cleanImagePath), 'resized_' + path.basename(imageName) + newExtension);
+
+    req.file.path = newFilePath;
+    req.file.filename = 'resized_' + path.basename(imageName) + newExtension;
+
+    sharp(cleanImagePath)
       .resize(500, 500, { fit: 'inside' })
       .toFormat('webp')
       .toFile(newFilePath, (err, info) => {
-        const filename = newFilePath.split(path.sep).pop();
-        //fs.unlinkSync(`images/${filename}`)
-        console.log(err)
+        const filename = filePath.split(path.sep).pop();
+        console.log(filename)
+        fs.unlinkSync(`images/${filename}`)
+        console.log(err);
       });
   }
   next();
