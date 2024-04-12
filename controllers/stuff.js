@@ -126,6 +126,7 @@ exports.rateThing = (req, res, next) => {
         }
         total += req.body.rating;
         let averageRating = total / (thing.ratings.length + 1);
+        averageRating = averageRating.toFixed(0);
         const newRating = {userId: req.auth.userId, grade: req.body.rating};
         Thing.findByIdAndUpdate({_id: thing._id}, {
            averageRating: averageRating,
